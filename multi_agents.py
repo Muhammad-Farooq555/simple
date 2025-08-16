@@ -1,42 +1,8 @@
-from agents import Agent, Runner, function_tool, OpenAIChatCompletionsModel, ModelProvider, AsyncOpenAI
-from agents.run import RunConfig
-from dotenv import load_dotenv
+from agents import Agent, Runner, function_tool
 import requests
 import asyncio
-import os
+from config import config 
 
-load_dotenv()
-
-# Load Gemini API key
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-if not gemini_api_key:
-    raise ValueError("GEMINI_API_KEY environment variable not set")
-
-# Gemini model provider
-class GeminiModelProvider(ModelProvider):
-    def __init__(self, api_key, model_name="gemini-2.0-flash"):
-        super().__init__()
-        self.api_key = api_key
-        self.model_name = model_name
-        self.client = AsyncOpenAI(
-            api_key=api_key,
-            base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
-        )
-
-    def get_model(self):
-        return OpenAIChatCompletionsModel(
-            model=self.model_name,
-            openai_client=self.client
-        )
-
-model_provider = GeminiModelProvider(api_key=gemini_api_key)
-
-# Model config
-config = RunConfig(
-    model=model_provider.get_model(),
-    model_provider=model_provider,
-    tracing_disabled=True
-)
 
 @function_tool
 def get_weather(city:str)->str:
@@ -63,7 +29,6 @@ You are a helpful programming assistant.
 2. If the user says "in detail" or asks a follow-up, then respond with a **detailed explanation** and more examples.
 3. If the query is not related to programming, respond only with: HANDOFF_TO:general
 """,
-    model=model_provider.get_model(),
 )
 
 # General Agent
@@ -76,7 +41,6 @@ You are a helpful general-purpose assistant.
 1. If the question is about programming, code, Python, functions, etc., respond with: HANDOFF_TO:programming
 2. Otherwise, answer normally with helpful, clear responses.
 """,
-    model=model_provider.get_model(),
     tools=[get_weather],
 )
 

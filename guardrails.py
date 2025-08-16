@@ -25,7 +25,7 @@ guardrail_agent = Agent(
 async def math_guardrail(  
     ctx: RunContextWrapper, agent: Agent, output: MessageOutput
 ) -> GuardrailFunctionOutput:    
-    result = await Runner.run(guardrail_agent, output.response, context=ctx.context)
+    result = await Runner.run(guardrail_agent, output.response, context=ctx.context,run_config=config)
 
     return GuardrailFunctionOutput(
         output_info=result.final_output,
@@ -42,7 +42,7 @@ agent = Agent(
 async def main():
     # This should trip the guardrail
     try:
-        await Runner.run(agent, "Hello, can you help me solve for x: 2x + 3 = 11?")
+        await Runner.run(agent, "Hello, can you help me solve for x: 2x + 3 = 11?",run_config=config)
         print("Guardrail didn't trip - this is unexpected")
 
     except OutputGuardrailTripwireTriggered:

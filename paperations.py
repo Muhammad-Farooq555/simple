@@ -224,30 +224,9 @@
 # Functions calling themselves,
 # Infinite loop's dance.
 
-
-from openai import AsyncOpenAI
-from agents import Agent,OpenAIChatCompletionsModel,Runner,set_tracing_disabled
-from dotenv import load_dotenv
+from agents import Agent,Runner
 import asyncio
-import os
-
-load_dotenv()   
-
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-
-client = AsyncOpenAI(
-    api_key=gemini_api_key,
-    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-)
-
-set_tracing_disabled(disabled=True)
-
-# # This agent will use the custom LLM provider
-# agent = Agent(
-#     name="Assistant",
-#     instructions="You are an expert programmer. Answer all coding problems in a simple, small, clear, and beginner-friendly way. Always provide examples when needed.",
-#     model=OpenAIChatCompletionsModel(model="gemini-2.0-flash", openai_client=clinet)
-# )
+from config import config
 
 summerize_agent = Agent(
     name="Summerize Agent",
@@ -258,7 +237,6 @@ summerize_agent = Agent(
     Provide a short summary of the given text.
     You can also ask the user for clarification or more information.
     """,
-    model=OpenAIChatCompletionsModel(model="gemini-2.0-flash", openai_client=client)
 )
 
 programming_agent = Agent(
@@ -270,7 +248,6 @@ programming_agent = Agent(
     Provide a clear and concise answer to the given text.
     You can also ask the user for clarification or more information.
     """,
-    model=OpenAIChatCompletionsModel(model="gemini-2.0-flash", openai_client=client)
 )
 
 async def main():
@@ -283,11 +260,11 @@ async def main():
     Include examples where applicable.
     Always provide enough information to be useful: provide context, explain your reasoning, and provide examples.
     """,
-    model=OpenAIChatCompletionsModel(model="gemini-2.0-flash", openai_client=client),
     handoffs=[summerize_agent, programming_agent]
     )
-    
-    result = await Runner.run(agent, "Lifelong learning is a vital part of real life that helps us grow, adapt, and stay engaged with the world around us. It goes beyond formal education and includes everyday experiences like learning a new skill, joining clubs, or even listening to educational podcasts during daily routines. For example, someone might decide to learn a new language, take an online cooking class, or join a local community group to meet like-minded people and share knowledge. Keeping a reflective journal can also be a powerful tool, helping individuals track their progress and think critically about their experiences. Lifelong learning is not just about professional development but also about personal enrichment, such as exploring new hobbies, improving mental well-being through mindfulness, or gaining financial literacy to manage everyday life better. Stories like that of Alex Smith, who used education to rebuild confidence after severe health challenges, highlight how continuous learning can transform lives and foster resilience. Successful people like Bill Gates and Elon Musk exemplify lifelong learning by constantly reading, exploring new topics, and pushing boundaries. Ultimately, embracing lifelong learning in real life means staying curious, open to change, and committed to personal growth no matter your age or background, making life richer and more fulfilling. Summarize text")
+    input_text = "Lifelong learning is a vital part of real life that helps us grow, adapt, and stay engaged with the world around us. It goes beyond formal education and includes everyday experiences like learning a new skill, joining clubs, or even listening to educational podcasts during daily routines. For example, someone might decide to learn a new language, take an online cooking class, or join a local community group to meet like-minded people and share knowledge. Keeping a reflective journal can also be a powerful tool, helping individuals track their progress and think critically about their experiences. Lifelong learning is not just about professional development but also about personal enrichment, such as exploring new hobbies, improving mental well-being through mindfulness, or gaining financial literacy to manage everyday life better. Stories like that of Alex Smith, who used education to rebuild confidence after severe health challenges, highlight how continuous learning can transform lives and foster resilience. Successful people like Bill Gates and Elon Musk exemplify lifelong learning by constantly reading, exploring new topics, and pushing boundaries. Ultimately, embracing lifelong learning in real life means staying curious, open to change, and committed to personal growth no matter your age or background, making life richer and more fulfilling. Summarize text"
+
+    result = await Runner.run(agent,input_text,run_config=config)
     print(result.final_output)
 
 if __name__ == "__main__":
